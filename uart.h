@@ -24,7 +24,7 @@ inline void uart_init();
 
 inline void uart_write(unsigned char c);
 void uart_write_str(unsigned char c[], unsigned int size);
-void uart_write_int(unsigned int acc);
+void uart_write_int(int acc);
 void uart_write_nl();
 
 unsigned int uart_get_int();

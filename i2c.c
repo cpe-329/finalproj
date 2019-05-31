@@ -14,8 +14,6 @@
 #include "msp.h"
 
 volatile uint8_t TXData[I2C_TX_DATA_MAX_SIZE] = {0};
-// volatile uint8_t TXDataPointer = 0;
-volatile uint8_t TXDataSize = 0;
 
 volatile uint8_t RXData = 0;
 
@@ -53,10 +51,11 @@ void i2c_set_txdata(uint8_t d1, uint8_t d2, uint8_t d3) {
 
 void i2c_write(uint8_t addr, unsigned int data_size) {
     uint8_t i = 0;
+
     EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TR;     // Set transmit mode (write)
     EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTT;  // I2C start condition
 
-    for (i = 0; i < TXDataSize; i++) {
+    for (i = 0; i < data_size; i++) {
         while (!data_written)
             ;  // Wait for EEPROM address to transmit
         data_written = FALSE;
@@ -66,7 +65,7 @@ void i2c_write(uint8_t addr, unsigned int data_size) {
 
     while (!data_written)
         ;  // Wait for the transmit to complete
-    data_written = 0;
+    data_written = FALSE;
 
     EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTP;  // I2C stop condition
 }
@@ -76,6 +75,7 @@ uint8_t i2c_read_byte(uint8_t addr) {
 
     EUSCI_B0->CTLW0 &= ~EUSCI_B_CTLW0_TR;    // Set receive mode (read)
     EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTT;  // I2C start condition (restart)
+
     // Wait for start to be transmitted
     while ((EUSCI_B0->CTLW0 & EUSCI_B_CTLW0_TXSTT))
         ;
@@ -83,8 +83,9 @@ uint8_t i2c_read_byte(uint8_t addr) {
     EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
     while (!data_read)
         ;  // Wait to receive a byte
-    data_read = 0;
+    data_read = FALSE;
     ReceiveByte = EUSCI_B0->RXBUF;  // Read byte from the buffer
+
     return ReceiveByte;
 }
 

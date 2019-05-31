@@ -25,70 +25,35 @@ unsigned char str_enter_reg[] = "Enter register address: ";
 unsigned char str_reg[] = "Reg address: ";
 unsigned char str_enter_val[] = "Enter value: ";
 unsigned char str_val[] = "Value: ";
-unsigned char str_reading[] = "Reading value ";
 unsigned char str_writing[] = "Writing value ";
 unsigned char str_to_reg[] = " to reg ";
 unsigned char str_from_reg[] = " from reg ";
 unsigned char str_done[] = "Done!";
+unsigned char str_reading[] = "Reading vals...";
+unsigned char str_vals_start[] = "Vals: X: ";
+unsigned char str_vals_mid[] = "\tY: ";
 
 volatile unsigned char char_data = '7';
 volatile uint8_t got_fresh_char = FALSE;
 
 int main(void) {
-       unsigned int reg = 0;
-       unsigned int value = 0;
-    // volatile uint32_t i = 0;
+    int16_t x_val = 8;
+    int16_t y_val = 9;
 
     init(FREQ);
 
-    led_on();
-    // Read or Write to I2C Memory
     bno_write(BNO_REG_MODE, BNO_MODE_NDOF);
 
-    delay_ms(200, FREQ_48_MHZ);
-    led_off();
-
-    delay_ms(200, FREQ_48_MHZ);
+    delay_ms(250, FREQ_48_MHZ);
 
     while (1) {
+        uart_write_str(str_vals_start, sizeof(str_vals_start));
+        uart_write_int(x_val);
+        uart_write_str(str_vals_mid, sizeof(str_vals_mid));
+        uart_write_int(y_val);
         uart_write_nl();
 
-        // Enter reg address
-        uart_write_str(str_enter_reg, sizeof(str_enter_reg));
-        reg = uart_get_int();
-        uart_write_nl();
-        uart_write_str(str_reg, sizeof(str_reg));
-        uart_write_int(reg);
-        uart_write_nl();
-
-        // Enter Value
-        uart_write_str(str_enter_val, sizeof(str_enter_val));
-        value = uart_get_int();
-        uart_write_nl();
-        uart_write_str(str_val, sizeof(str_val));
-        uart_write_int(value);
-        uart_write_nl();
-
-        // Output data
-        uart_write_str(str_writing, sizeof(str_writing));
-        uart_write_int(value);
-        uart_write_str(str_to_reg, sizeof(str_to_reg));
-        uart_write_int(reg);
-        uart_write_nl();
-
-        led_on();
-        // Read or Write to I2C Memory
-        bno_write(reg, value);
-
-        delay_ms(200, FREQ_48_MHZ);
-        led_off();
-
-        delay_ms(200, FREQ_48_MHZ);
-
-        uart_write_str(str_done, sizeof(str_done));
-        uart_write_nl();
-        uart_write_nl();
-        
+        bno_read_angles(&x_val, &y_val);
     }
 }
 

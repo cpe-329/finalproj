@@ -5,7 +5,6 @@
  *
  * CPE 329-17/18 Spring 2019
  */
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "delay.h"
@@ -18,9 +17,7 @@
 static unsigned char str_uart_welcome[] = "UART initialized\0";
 
 inline void uart_init() {
-    // rgb_set(RGB_BLUE);
-
-    has_new = false;
+    has_new = FALSE;
     new_char = 0;
 
     // Configure UART pins
@@ -47,6 +44,7 @@ inline void uart_init() {
 
     // Enable eUSCIA0 interrupt in NVIC module
     NVIC->ISER[0] = 1 << ((EUSCIA0_IRQn)&31);
+
     // Enable global interrupt
     __enable_irq();
 
@@ -70,7 +68,11 @@ void uart_write_str(unsigned char c[], unsigned int size) {
     }
 }
 
-void uart_write_int(unsigned int acc) {
+void uart_write_int(int acc) {
+    if (acc < 0) {
+        uart_write('-');
+        acc = 0 - acc;
+    }
     if (acc >= 10) {
         uart_write_int(acc / 10);
     }
@@ -85,7 +87,6 @@ void uart_write_nl() {
 unsigned int uart_get_int() {
     int accumulator = 0;
     new_char = 255;
-    // rgb_set(RGB_BLUE);
     while (new_char != ESCAPE_VAL) {
         if (has_new) {
             if (new_char == ESCAPE_VAL) {
@@ -93,10 +94,10 @@ unsigned int uart_get_int() {
             } else if (new_char >= '0' && new_char <= '9') {
                 accumulator = (10 * accumulator) + (new_char - '0');
             }
-            has_new = false;
+            has_new = FALSE;
         }
     }
-    has_new = false;
+    has_new = FALSE;
     new_char = 0;
     return accumulator;
 }
@@ -107,5 +108,4 @@ void uart_write_volts(unsigned int val_mv) {
     uart_write_int(val_mv % 100 / 10);
     uart_write_int(val_mv % 10);
     uart_write('V');
-    // uart_write_nl();
 }
