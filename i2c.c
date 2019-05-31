@@ -8,172 +8,96 @@
  */
 
 #include "i2c.h"
-#include <stdbool.h>
 #include <stdint.h>
 #include "delay.h"
 #include "led.h"
 #include "msp.h"
 
-volatile uint8_t RXData[5] = {0};
-volatile uint8_t RXDataPointer = 0;
-volatile uint8_t ready = 0;
-
 volatile uint8_t TXData[I2C_TX_DATA_MAX_SIZE] = {0};
-volatile uint8_t TXDataPointer = 0;
+// volatile uint8_t TXDataPointer = 0;
 volatile uint8_t TXDataSize = 0;
-volatile bool ready_to_write = false;
 
-void i2c_init() {
+volatile uint8_t RXData = 0;
+
+uint8_t data_written = FALSE;
+uint8_t data_read = FALSE;
+
+void i2c_init(uint8_t slave_addr) {
     rgb_set(RGB_RED);
 
-    P6->SEL0 |= I2C_PINS;  // I2C pins
-
-    // Initialize data variable
-    RXDataPointer = 0;
-
-    // Configure USCI_B3 for I2C mode
-    EUSCI_B3->CTLW0 |= EUSCI_A_CTLW0_SWRST;       // Software reset enabled
-    EUSCI_B3->CTLW0 = EUSCI_A_CTLW0_SWRST |       // Remain eUSCI in reset mode
+    P1->SEL0 |= I2C_PINS;  // Set I2C pins of eUSCI_B0
+    // Enable eUSCIB0 interrupt in NVIC module
+    NVIC->ISER[0] = 1 << ((EUSCIB0_IRQn)&31);
+    // Configure USCI_B0 for I2C mode
+    EUSCI_B0->CTLW0 |= EUSCI_A_CTLW0_SWRST;       // Software reset enabled
+    EUSCI_B0->CTLW0 = EUSCI_A_CTLW0_SWRST |       // Remain eUSCI in reset mode
                       EUSCI_B_CTLW0_MODE_3 |      // I2C mode
                       EUSCI_B_CTLW0_MST |         // Master mode
                       EUSCI_B_CTLW0_SYNC |        // Sync mode
                       EUSCI_B_CTLW0_SSEL__SMCLK;  // SMCLK
-
-    EUSCI_B3->CTLW1 |= EUSCI_B_CTLW1_ASTP_2;
-    // Automatic stop generated
-    // after EUSCI_B3->TBCNT is reached
-
-    EUSCI_B3->BRW = 30;                       // baudrate = SMCLK / 30 = 100kHz
-    EUSCI_B3->TBCNT = 0x0;                    // number of bytes to be received
-    EUSCI_B3->I2CSA = I2C_SLACE_ADDR;         // Slave address
-    EUSCI_B3->CTLW0 &= ~EUSCI_A_CTLW0_SWRST;  // Release eUSCI from reset
-
-    EUSCI_B3->IE |= EUSCI_B_IE_RXIE |  // Enable receive interrupt
-                    EUSCI_B_IE_TXIE |
-                    EUSCI_B_IE_NACKIE;  // |  // Enable NACK interrupt
-    // EUSCI_B_IE_BCNTIE;   // Enable byte counter interrupt
-
-    // Enable eUSCIB3 interrupt in NVIC module
-    NVIC->ISER[0] = 1 << ((EUSCIB3_IRQn)&31);
+    EUSCI_B0->BRW = 30;                       // baudrate = SMCLK / 30 = 100kHz
+    EUSCI_B0->I2CSA = slave_addr;             // Slave address
+    EUSCI_B0->CTLW0 &= ~EUSCI_A_CTLW0_SWRST;  // Release eUSCI from reset
+    EUSCI_B0->IE |= EUSCI_A_IE_RXIE |         // Enable receive interrupt
+                    EUSCI_A_IE_TXIE;
 
     delay_ms(500, FREQ_48_MHZ);
     rgb_clear(RGB_RED);
 }
 
-void i2c_write(uint8_t addr, uint8_t data) {
-    EUSCI_B3->I2CSA = I2C_SLACE_ADDR;  // Slave address
-
-    TXData[0] = addr >> 8;
-    TXData[1] = addr & 0x0FF;
-    TXData[2] = data;
-
-    // write mode
-    EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TR;
-
-    rgb_set(RGB_GREEN);
-    // Ensure stop condition got sent
-    while (EUSCI_B3->CTLW0 & EUSCI_B_CTLW0_TXSTP) {
-    }
-    rgb_clear(RGB_GREEN);
-
-    ready_to_write = true;
-
-    // I2C start condition
-    EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
-
-    // EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;  // I2C stop condition
+void i2c_set_txdata(uint8_t d1, uint8_t d2, uint8_t d3) {
+    TXData[0] = d1;
+    TXData[1] = d2;
+    TXData[2] = d3;
 }
 
-unsigned int i2c_read(uint8_t addr) {
-    unsigned int data = 0;
+void i2c_write(uint8_t addr, unsigned int data_size) {
+    uint8_t i = 0;
+    EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TR;     // Set transmit mode (write)
+    EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTT;  // I2C start condition
 
-    RXData[0] = addr >> 8;
-    RXData[1] = addr & 0x0FF;
-    // First write the address of memory
-    // write mode
-    EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TR;
+    for (i = 0; i < TXDataSize; i++) {
+        while (!data_written)
+            ;  // Wait for EEPROM address to transmit
+        data_written = FALSE;
+        EUSCI_B0->TXBUF =
+            TXData[i];  // Send the high byte of the memory address
+    }
 
-    // I2C start condition
-    EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
+    while (!data_written)
+        ;  // Wait for the transmit to complete
+    data_written = 0;
 
-    // wait til both parts of the address is sent;
-    while (ready < 2)
+    EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTP;  // I2C stop condition
+}
+
+uint8_t i2c_read_byte(uint8_t addr) {
+    uint8_t ReceiveByte;
+
+    EUSCI_B0->CTLW0 &= ~EUSCI_B_CTLW0_TR;    // Set receive mode (read)
+    EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTT;  // I2C start condition (restart)
+    // Wait for start to be transmitted
+    while ((EUSCI_B0->CTLW0 & EUSCI_B_CTLW0_TXSTT))
         ;
-    ready = 0;
-
-    // Start reading
-    // read mode
-    EUSCI_B3->CTLW0 &= ~EUSCI_B_CTLW0_TR;
-
-    // I2C start condition
-    EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
-
-    // stop
-    EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
-
-    return data;
+    // set stop bit to trigger after first byte
+    EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
+    while (!data_read)
+        ;  // Wait to receive a byte
+    data_read = 0;
+    ReceiveByte = EUSCI_B0->RXBUF;  // Read byte from the buffer
+    return ReceiveByte;
 }
 
-// I2C interrupt service routine
-void EUSCIB3_IRQHandler(void) {
-    // led_on();
-    // If a NACK was received:
-    if (EUSCI_B3->IFG & EUSCI_B_IFG_NACKIFG) {
-        EUSCI_B3->IFG &= ~EUSCI_B_IFG_NACKIFG;
-
-        // I2C start condition
-        EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
-
-        //  Return to statrt state after receiving Nack,
-        // in repsonse to last expected byte
+// I2C Interrupt Service Routine
+void EUSCIB0_IRQHandler(void) {
+    if (EUSCI_B0->IFG & EUSCI_B_IFG_TXIFG0)  // Check if transmit complete
+    {
+        EUSCI_B0->IFG &= ~EUSCI_B_IFG_TXIFG0;  // Clear interrupt flag
+        data_written = TRUE;                   // Set global flag
     }
-    // If data was received:
-    if (EUSCI_B3->IFG & EUSCI_B_IFG_RXIFG0) {
-        EUSCI_B3->IFG &= ~EUSCI_B_IFG_RXIFG0;
-        if (RXDataPointer < 2) {
-            EUSCI_B3->TXBUF = RXData[RXDataPointer++];
-            ready++;
-        }
-
-        // Get RX data
-        RXData[RXDataPointer++] = EUSCI_B3->RXBUF;
-
-        if (RXDataPointer > sizeof(RXData)) {
-            RXDataPointer = 0;
-        }
-
-        // Wake up on exit from ISR
-        // SCB->SCR &= ~SCB_SCR_SLEEPONEXIT_Msk;
-
-        // // Ensures SLEEPONEXIT takes effect immediately
-        // __DSB();
+    if (EUSCI_B0->IFG & EUSCI_B_IFG_RXIFG0)  // Check if receive complete
+    {
+        EUSCI_B0->IFG &= ~EUSCI_B_IFG_RXIFG0;  // Clear interrupt flag
+        data_read = TRUE;                      // Set global flag
     }
-
-    // TX buffer has been cleared
-    if (EUSCI_B3->IFG & EUSCI_B_IFG_TXIFG0) {
-        // rgb_set(RGB_BLUE);
-
-        // Clear the interrupt
-        EUSCI_B3->IFG &= ~EUSCI_B_IFG_TXIFG0;
-
-        if (ready_to_write) {
-            rgb_set(TXDataPointer);
-            EUSCI_B3->TXBUF = TXData[TXDataPointer++];
-            // All data has been sent
-            if (TXDataPointer >= I2C_TX_DATA_MAX_SIZE - 1) {
-                // Sent all the data, send Stop
-                TXDataPointer = 0;
-                // I2C start condition
-                EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
-                led_on();
-
-                ready_to_write = false;
-            }
-        }
-        rgb_clear(RGB_RED);
-    }
-    // if (EUSCI_B3->IFG & EUSCI_B_IFG_BCNTIFG) {
-    //     EUSCI_B3->IFG &= ~EUSCI_B_IFG_BCNTIFG;
-    // }
-    // led_off();
 }

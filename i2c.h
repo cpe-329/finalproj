@@ -13,17 +13,15 @@
 #include <stdint.h>
 #include "my_msp.h"
 
-#define I2C_SCL_PIN P6_5
-#define I2C_SDA_PIN P6_4
+#define I2C_SCL_PIN P1_7
+#define I2C_SDA_PIN P1_6
 #define I2C_PINS (I2C_SCL_PIN | I2C_SDA_PIN)
-
-#define I2C_SLACE_ADDR (0b1010000)
 
 #define I2C_TX_DATA_MAX_SIZE (3)
 
-volatile int finish_writing;
-void i2c_init();
-void i2c_write(uint8_t addr, uint8_t data);
-unsigned int i2c_read(uint8_t addr);
+void i2c_init(uint8_t slave_addr);
+void i2c_set_txdata(uint8_t d1, uint8_t d2, uint8_t d3);
+void i2c_write(uint8_t addr, unsigned int data_size);
+uint8_t i2c_read_byte(uint8_t addr);
 
 #endif /* I2C_H_ */

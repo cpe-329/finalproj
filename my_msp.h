@@ -9,6 +9,9 @@
 #ifndef __MY_MSP_H__
 #define __MY_MSP_H__
 
+#define TRUE (1)
+#define FALSE (0)
+
 // Port 1
 #define P1_0 BIT0  // P1.0
 #define P1_1 BIT1  // P1.1

@@ -11,110 +11,86 @@
 #include <stdint.h>
 #include "msp.h"
 
-//#include "adc.h"
 //#include "button.h"
+#include "bno055.h"
 #include "delay.h"
+#include "i2c.h"
 #include "led.h"
 #include "my_msp.h"
-//#include "scope_data.h"
-//#include "scope_term.h"
-//#include "timers.h"
-#include "i2c.h"
 #include "uart.h"
 
 #define FREQ FREQ_48_MHZ
 
-unsigned char str_enter_addr[] = "Enter address: ";
-unsigned char str_addr[] = "Address: ";
+unsigned char str_enter_reg[] = "Enter register address: ";
+unsigned char str_reg[] = "Reg address: ";
 unsigned char str_enter_val[] = "Enter value: ";
 unsigned char str_val[] = "Value: ";
 unsigned char str_reading[] = "Reading value ";
 unsigned char str_writing[] = "Writing value ";
-unsigned char str_to_addr[] = " to address ";
-unsigned char str_fron_addr[] = "from address";
+unsigned char str_to_reg[] = " to reg ";
+unsigned char str_from_reg[] = " from reg ";
+unsigned char str_done[] = "Done!";
 
 volatile unsigned char char_data = '7';
-volatile bool got_fresh_char = false;
+volatile uint8_t got_fresh_char = FALSE;
 
 int main(void) {
-    unsigned int addr = 0;
-    unsigned int value = 0;
-    volatile uint32_t i = 0;
-    finish_writing = 0;
+       unsigned int reg = 0;
+       unsigned int value = 0;
+    // volatile uint32_t i = 0;
 
     init(FREQ);
 
+    led_on();
+    // Read or Write to I2C Memory
+    bno_write(BNO_REG_MODE, BNO_MODE_NDOF);
+
+    delay_ms(200, FREQ_48_MHZ);
+    led_off();
+
+    delay_ms(200, FREQ_48_MHZ);
+
     while (1) {
-        // uart_write_nl();
+        uart_write_nl();
 
-        // // Enter address
-        // uart_write_str(str_enter_addr, sizeof(str_enter_addr));
-        // addr = uart_get_int();
-        // uart_write_nl();
-        // uart_write_str(str_addr, sizeof(str_addr));
-        // uart_write_int(addr);
-        // uart_write_nl();
+        // Enter reg address
+        uart_write_str(str_enter_reg, sizeof(str_enter_reg));
+        reg = uart_get_int();
+        uart_write_nl();
+        uart_write_str(str_reg, sizeof(str_reg));
+        uart_write_int(reg);
+        uart_write_nl();
 
-        // // Enter Value
-        // uart_write_str(str_enter_val, sizeof(str_enter_val));
-        // value = uart_get_int();
-        // uart_write_nl();
-        // uart_write_str(str_val, sizeof(str_val));
-        // uart_write_int(value);
-        // uart_write_nl();
+        // Enter Value
+        uart_write_str(str_enter_val, sizeof(str_enter_val));
+        value = uart_get_int();
+        uart_write_nl();
+        uart_write_str(str_val, sizeof(str_val));
+        uart_write_int(value);
+        uart_write_nl();
 
-        // // Output data
-        // uart_write_str(str_writing, sizeof(str_writing));
-        // uart_write_int(value);
-        // uart_write_str(str_to_addr, sizeof(str_to_addr));
-        // uart_write_int(addr);
-        // uart_write_nl();
-        // uart_write_nl();
+        // Output data
+        uart_write_str(str_writing, sizeof(str_writing));
+        uart_write_int(value);
+        uart_write_str(str_to_reg, sizeof(str_to_reg));
+        uart_write_int(reg);
+        uart_write_nl();
+
         led_on();
         // Read or Write to I2C Memory
-        i2c_write(addr, value);
-        // Waits until all bytes are written
-        while (!finish_writing) {
-            rgb_set(RGB_GREEN);
-        }
+        bno_write(reg, value);
 
-        rgb_clear(RGB_GREEN);
-        finish_writing = 0;
         delay_ms(200, FREQ_48_MHZ);
         led_off();
+
+        delay_ms(200, FREQ_48_MHZ);
+
+        uart_write_str(str_done, sizeof(str_done));
+        uart_write_nl();
+        uart_write_nl();
+        
     }
 }
-
-/*
-int main(void) {
-
-    while (1) {
-
-        // // Don't wake up on exit from ISR
-        // SCB->SCR |= SCB_SCR_SLEEPONEXIT_Msk;
-
-        // // Ensures SLEEPONEXIT takes effect immediately
-        // __DSB();
-
-        // Arbitrary delay before transmitting the next byte
-        for (i = 2000; i > 0; i--) {
-        }
-
-        rgb_set(RGB_GREEN);
-        // Ensure stop condition got sent
-        while (EUSCI_B3->CTLW0 & EUSCI_B_CTLW0_TXSTP) {
-        }
-        rgb_clear(RGB_GREEN);
-
-        // I2C start condition
-        EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
-
-        // // Go to LPM0
-        // __sleep();
-        // __no_operation();  // for debug
-    }
-}
-*/
 
 // UART interrupt service routine
 void EUSCIA0_IRQHandler(void) {
@@ -127,7 +103,7 @@ void EUSCIA0_IRQHandler(void) {
         }
 
         new_char = EUSCI_A0->RXBUF;
-        has_new = true;
+        has_new = TRUE;
         // Echo the received character back
         EUSCI_A0->TXBUF = new_char;
         // delay_ms(10, FREQ);
