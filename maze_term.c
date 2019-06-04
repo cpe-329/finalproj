@@ -140,15 +140,18 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
 
     dist_wall_ball_x = wall_x - ball_x;
 
+
+    if (dist_wall_ball_x == 0){
+        return;
+    }
     // moving right towards wall on right
-    if (dist_wall_ball_x > 0 && ball_x_vel > 0) {
+    else if (dist_wall_ball_x > 0 && ball_x_vel > 0) {
         if (ball_x_vel >= dist_wall_ball_x) {
             ball_x_vel = dist_wall_ball_x - 1;
             // ball_x = wall_x - 1;
             // ball_y += ball_y_vel;
         }
     }
-
     // moving left towards wall on left
     else if (dist_wall_ball_x < 0 && ball_x_vel < 0) {
         if (ball_x_vel <= dist_wall_ball_x) {
@@ -169,6 +172,9 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
 
     dist_wall_ball_y = wall_y - ball_y;
 
+    if (dist_wall_ball_y == 0){
+        return;
+    }
     // moving down towards wall below
     if (dist_wall_ball_y > 0 && ball_y_vel > 0) {
         if (ball_y_vel >= dist_wall_ball_y) {
@@ -239,7 +245,7 @@ void check_maze1() {
     move_cursor(old_ball_x, old_ball_y);
     uart_write(' ');
     draw_new_ball();
-    
+
     if (ball_x == WIN_X && ball_y == WIN_Y) {
         win = 1;
     }
@@ -284,6 +290,7 @@ void paint_terminal() {
 static void draw_new_ball() {
     move_cursor(ball_x, ball_y);
     uart_write('O');
+    move_home();
 }
 void print_bits(int16_t val) {
     unsigned int i = 0b1000000000000000;

@@ -57,7 +57,7 @@ int main(void) {
         paint_terminal();
         delay_ms(1000, FREQ);
 
-        while (win == 0) {
+        while (!win) {
             bno_read_angles(&x_val, &y_val);
 
             // update_ball(x_val, y_val);
