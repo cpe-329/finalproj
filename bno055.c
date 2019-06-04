@@ -10,6 +10,7 @@
 #include "bno055.h"
 #include <stdint.h>
 #include "i2c.h"
+#include "delay.h"
 
 void bno_init() {}
 
@@ -28,10 +29,15 @@ uint8_t bno_read(uint8_t reg) {
 }
 
 void bno_read_angles(int16_t* x, int16_t* y) {
-    *x = bno_read(BNO_REG_ROLL_MSB) & -1;
+    int16_t x_high = bno_read(BNO_REG_ROLL_MSB) & -1;
+    delay_ms(10, FREQ_48_MHZ);
     // int16_t x_low = bno_read(BNO_REG_ROLL_LSB);
-    *y = bno_read(BNO_REG_PITCH_MSB);
+    int16_t y_high = bno_read(BNO_REG_PITCH_MSB);
     // int16_t y_low = bno_read(BNO_REG_PITCH_LSB);
+
+    *x = x_high;
+    *y = y_high;
+
 
     if (*x > 128) {
         *x = *x - 255;

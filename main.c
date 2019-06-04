@@ -53,6 +53,8 @@ int main(void) {
         uart_write_int(y_val);
         uart_write_nl();
 
+        delay_ms(5, FREQ);
+        
         bno_read_angles(&x_val, &y_val);
     }
 }
