@@ -122,7 +122,7 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
         if(dist_wall_ball_x <= ball_x_vel && (wall_y - wall_len) <= ball_y <= wall_y){
             ball_x_vel = 0;
             ball_x = wall_x + 1;
-            ball_y += ball_y_vel;
+//            ball_y += ball_y_vel;
         }
     }
     //moving right towards wall on right
@@ -130,7 +130,7 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
         if(dist_wall_ball_x <= ball_x_vel && (wall_y - wall_len) <= ball_y <= wall_y){
             ball_x_vel = 0;
             ball_x = wall_x - 1;
-            ball_y += ball_y_vel;
+//            ball_y += ball_y_vel;
         }
     }
 }
@@ -142,7 +142,7 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
         if(dist_wall_ball_y <= ball_y_vel && wall_x <= ball_x <=  (wall_x + wall_len)){
             ball_y_vel = 0;
             ball_y = wall_y + 1;
-            ball_x += ball_x_vel;
+//            ball_x += ball_x_vel;
         }
     }
     //moving down towards wall below
@@ -150,7 +150,7 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
         if(dist_wall_ball_y <= ball_y_vel &&  wall_x <= ball_x <= (wall_x + wall_len)){
             ball_y_vel = 0;
             ball_y = wall_y - 1;
-            ball_x += ball_x_vel;
+//            ball_x += ball_x_vel;
         }
     }
 }
@@ -195,9 +195,11 @@ void check_maze1(){
 //    else if (ball_y_vel == 0){
 //        ball_y = old_ball_y;
 //    }
-    if (old_ball_x == ball_x && old_ball_y == ball_y){
+    if (old_ball_x == ball_x && ball_x_vel != 0){
         //if none of the walls affect the ball's movement
         ball_x += ball_x_vel;
+    }
+    if (old_ball_y == ball_y && ball_y_vel != 0){
         ball_y += ball_y_vel;
     }
     move_cursor(old_ball_x, old_ball_y);
