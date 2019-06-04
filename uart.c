@@ -11,7 +11,7 @@
 #include "led.h"
 #include "msp.h"
 #include "my_msp.h"
-#include "scope_term.h"
+#include "maze_term.h"
 #include "uart.h"
 
 static unsigned char str_uart_welcome[] = "UART initialized\0";
