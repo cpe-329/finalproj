@@ -148,16 +148,12 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     else if (dist_wall_ball_x > 0 && ball_x_vel > 0) {
         if (ball_x_vel >= dist_wall_ball_x) {
             ball_x_vel = dist_wall_ball_x - 1;
-            // ball_x = wall_x - 1;
-            // ball_y += ball_y_vel;
         }
     }
     // moving left towards wall on left
     else if (dist_wall_ball_x < 0 && ball_x_vel < 0) {
         if (ball_x_vel <= dist_wall_ball_x) {
             ball_x_vel = dist_wall_ball_x + 1;
-            // ball_x = wall_x + 1;
-            // ball_y += ball_y_vel;
         }
     }
 }
@@ -183,13 +179,18 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     }
     // moving up towards wall above
     else if (dist_wall_ball_y < 0 && ball_y_vel < 0) {
-        if (ball_y_vel >= dist_wall_ball_y) {
+        if (ball_y_vel <= dist_wall_ball_y) {
             ball_y_vel = dist_wall_ball_y + 1;
         }
     }
 }
 
 void set_ball_vels(int16_t x_vel, int16_t y_vel) {
+    move_home();
+    uart_write_str("X: ",3);
+    uart_write_int(x_vel);
+    uart_write_str("\tY: ",4);
+    uart_write_int(y_vel);
     ball_x_vel = x_vel;
     ball_y_vel = y_vel;
 }
@@ -220,6 +221,11 @@ void check_border() {
     check_horz_wall(1, 1, LENGTH);
     // Bottom border
     check_horz_wall(1, WIDTH, LENGTH);
+}
+
+static void draw_new_ball() {
+    move_cursor(ball_x, ball_y);
+    uart_write('O');
 }
 
 void check_maze1() {
@@ -254,23 +260,23 @@ void check_maze1() {
 void start_animation() {
     move_cursor(START_TITLE_X, START_TITLE_Y);
     uart_write_str("THE MAZE GAME", 13);
-    draw_horizontal(17, START_TITLE_X - 2, START_TITLE_Y + 2, '*');
-    draw_horizontal(17, START_TITLE_X - 2, START_TITLE_Y - 2, '*');
-    draw_vertical(5, START_TITLE_X - 2, START_TITLE_Y + 2, '*');
-    draw_vertical(5, START_TITLE_X + 14, START_TITLE_Y + 2, '*');
+    draw_horizontal( START_TITLE_X - 2, START_TITLE_Y + 2, 17,'*');
+    draw_horizontal( START_TITLE_X - 2, START_TITLE_Y - 2, 17, '*');
+    draw_vertical(START_TITLE_X - 2, START_TITLE_Y - 2, 5,  '*');
+    draw_vertical(START_TITLE_X + 14, START_TITLE_Y - 2, 5, '*');
     move_cursor(START_TITLE_X - 5, START_TITLE_Y + 4);
     uart_write_str("CPE 329 - Final Project", 23);
     move_cursor(START_TITLE_X - 10, START_TITLE_Y + 6);
     uart_write_str("By: Spencer Shaw and Danica Fujiwara", 36);
-    draw_horizontal(LENGTH - 2, 2, 1, 'v');
-    draw_horizontal(LENGTH - 2, 2, WIDTH, 'v');
-    draw_vertical(WIDTH, LENGTH, WIDTH, 'v');
-    draw_vertical(WIDTH, 1, WIDTH, 'v');
+    draw_horizontal( 2, 1,LENGTH - 2, 'v');
+    draw_horizontal( 2, WIDTH,LENGTH - 2, 'v');
+    draw_vertical(LENGTH, 1,WIDTH,  'v');
+    draw_vertical( 1, 1,WIDTH, 'v');
     delay_ms_auto(10000);
-    draw_horizontal(LENGTH - 2, 2, 1, '^');
-    draw_horizontal(LENGTH - 2, 2, WIDTH, '^');
-    draw_vertical(WIDTH, LENGTH, WIDTH, '^');
-    draw_vertical(WIDTH, 1, WIDTH, '^');
+    draw_horizontal( 2, 1,LENGTH - 2, '^');
+    draw_horizontal(2, WIDTH, LENGTH - 2, '^');
+    draw_vertical( LENGTH, 1,WIDTH, '^');
+    draw_vertical( 1, 1,WIDTH, '^');
 }
 
 void paint_terminal() {
@@ -292,6 +298,7 @@ static void draw_new_ball() {
     uart_write('O');
     move_home();
 }
+
 void print_bits(int16_t val) {
     unsigned int i = 0b1000000000000000;
     while (i != 0) {
