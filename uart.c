@@ -14,7 +14,7 @@
 #include "maze_term.h"
 #include "uart.h"
 
-static unsigned char str_uart_welcome[] = "UART initialized\0";
+static unsigned char str_uart_welcome[] = "UART initialized";
 
 inline void uart_init() {
     has_new = FALSE;

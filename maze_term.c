@@ -69,9 +69,9 @@ void move_cursor(unsigned int x, unsigned int y) {
     uart_write('H');
 }
 
-inline void draw_horizontal(unsigned int length,
-                            unsigned int x,
+inline void draw_horizontal(unsigned int x,
                             unsigned int y,
+                            unsigned int length,
                             char c) {
     int i;
     move_cursor(x, y);
@@ -80,90 +80,122 @@ inline void draw_horizontal(unsigned int length,
     }
 }
 
-inline void draw_vertical(unsigned int length,
-                          unsigned int x,
+inline void draw_vertical(unsigned int x,
                           unsigned int y,
+                          unsigned int length,
                           char c) {
     int i;
 
     move_cursor(x, y);
     for (i = 0; i < length; i++) {
         uart_write(c);
-        y--;
-        move_cursor(x, y);
+        // y++;
+        // move_cursor(x, y);
+        move_down(1);
+        move_left(1);
     }
 }
 
 void print_border() {
-    draw_horizontal(LENGTH - 2, 2, 1, '=');
-    draw_horizontal(LENGTH - 2, 2, WIDTH, '=');
-    draw_vertical(WIDTH, LENGTH, WIDTH, '|');
-    draw_vertical(WIDTH, 1, WIDTH, '|');
+    // Top boarder
+    draw_horizontal(2, 1, LENGTH - 2, '=');
+    // Bottom boarder
+    draw_horizontal(2, WIDTH, LENGTH - 2, '=');
+    // Left boarder
+    draw_vertical(1, 2, WIDTH - 2, '|');
+    // Right boarder
+    draw_vertical(LENGTH, 2, WIDTH - 2, '|');
+
+    // Top left corner
     draw_vertical(1, 1, 1, '+');
-    draw_vertical(1, 1, 24, '+');
-    draw_vertical(1, 80, 1, '+');
-    draw_vertical(1, 80, 24, '+');
+    // Top right corner
+    draw_vertical(LENGTH, 1, 1, '+');
+    // Bottom right corner
+    draw_vertical(LENGTH, WIDTH, 1, '+');
+    // Bottom left corner
+    draw_vertical(1, WIDTH, 1, '+');
 }
 
 void draw_maze1() {
-    draw_vertical(VERT_WALL_LENGTH, WALL1_M1_X, WALL1_M1_Y, '|');
-    draw_vertical(VERT_WALL_LENGTH, WALL2_M1_X, WALL2_M1_Y, '|');
-    draw_horizontal(HORZ_WALL_LENGTH, WALL3_M1_X, WALL3_M1_Y, '=');
-    draw_horizontal(HORZ_WALL_LENGTH, WALL4_M1_X, WALL4_M1_Y, '=');
+    // Vert wall 1
+    draw_vertical(WALL1_M1_X, WALL1_M1_Y, VERT_WALL_LENGTH, '|');
+    // Vert wall 2
+    draw_vertical(WALL2_M1_X, WALL2_M1_Y, VERT_WALL_LENGTH, '|');
+    // Horz wall 1
+    draw_horizontal(WALL3_M1_X, WALL3_M1_Y, HORZ_WALL_LENGTH, '=');
+    // Horz wall 2
+    draw_horizontal(WALL4_M1_X, WALL4_M1_Y, HORZ_WALL_LENGTH, '=');
+    // Maze
     move_cursor(WIN_X, WIN_Y);
     uart_write('X');
 }
 
 void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
-    int dist_wall_ball_x = wall_x - ball_x;
-    // moving left towards wall on left
-    if (dist_wall_ball_x < 0 && ball_x_vel < 0) {
-        if (dist_wall_ball_x <= ball_x_vel &&
-            (wall_y - wall_len) <= ball_y  && ball_y <= wall_y) {
-            ball_x_vel = 0;
-            ball_x = wall_x + 1;
-//            ball_y += ball_y_vel;
+    int dist_wall_ball_x;
+
+    // Not to the left or right of the wall
+    if ((ball_y < wall_y) | (ball_y > wall_y + wall_len)) {
+        return;
+    }
+
+    dist_wall_ball_x = wall_x - ball_x;
+
+    // moving right towards wall on right
+    if (dist_wall_ball_x > 0 && ball_x_vel > 0) {
+        if (ball_x_vel >= dist_wall_ball_x) {
+            ball_x_vel = dist_wall_ball_x - 1;
+            // ball_x = wall_x - 1;
+            // ball_y += ball_y_vel;
         }
     }
-    // moving right towards wall on right
-    else if (dist_wall_ball_x > 0 && ball_x_vel > 0) {
-        if (dist_wall_ball_x <= ball_x_vel &&
-            (wall_y - wall_len) <= ball_y && ball_y <= wall_y) {
-            ball_x_vel = 0;
-            ball_x = wall_x - 1;
-//            ball_y += ball_y_vel;
+
+    // moving left towards wall on left
+    else if (dist_wall_ball_x < 0 && ball_x_vel < 0) {
+        if (ball_x_vel <= dist_wall_ball_x) {
+            ball_x_vel = dist_wall_ball_x + 1;
+            // ball_x = wall_x + 1;
+            // ball_y += ball_y_vel;
         }
     }
 }
 
 void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
-    int dist_wall_ball_y = wall_y - ball_y;
-    // moving up towards wall above
-    if (dist_wall_ball_y < 0 && ball_y_vel < 0) {
-        if (dist_wall_ball_y <= ball_y_vel &&
-            (wall_x <= ball_x && ball_x <= (wall_x + wall_len))) {
-            ball_y_vel = 0;
-            ball_y = wall_y + 1;
-//            ball_x += ball_x_vel;
+    int dist_wall_ball_y;
+
+    // Not above or below the wall
+    if ((ball_x < wall_x) | (ball_x > wall_x + wall_len)) {
+        return;
+    }
+
+    dist_wall_ball_y = wall_y - ball_y;
+
+    // moving down towards wall below
+    if (dist_wall_ball_y > 0 && ball_y_vel > 0) {
+        if (ball_y_vel >= dist_wall_ball_y) {
+            ball_y_vel = dist_wall_ball_y - 1;
         }
     }
-    // moving down towards wall below
-    else if (dist_wall_ball_y > 0 && ball_y_vel > 0) {
-        if (dist_wall_ball_y <= ball_y_vel &&
-            wall_x <= ball_x && ball_x <= (wall_x + wall_len)) {
-            ball_y_vel = 0;
-            ball_y = wall_y - 1;
-//            ball_x += ball_x_vel;
+    // moving up towards wall above
+    else if (dist_wall_ball_y < 0 && ball_y_vel < 0) {
+        if (ball_y_vel >= dist_wall_ball_y) {
+            ball_y_vel = dist_wall_ball_y + 1;
         }
     }
 }
 
+void set_ball_vels(int16_t x_vel, int16_t y_vel) {
+    ball_x_vel = x_vel;
+    ball_y_vel = y_vel;
+}
+
 void update_ball(int16_t x_accel, int16_t y_accel) {
+    // Apply friction?
     if (x_accel == 0 && ball_x_vel > 0) {
         x_accel = -1;
     } else if (x_accel == 0 && ball_x_vel < 0) {
         x_accel = 1;
     }
+
     if (y_accel == 0 && ball_y_vel > 0) {
         y_accel = -1;
     } else if (y_accel == 0 && ball_y_vel < 0) {
@@ -174,9 +206,13 @@ void update_ball(int16_t x_accel, int16_t y_accel) {
 }
 
 void check_border() {
-    check_vert_wall(1, WIDTH, WIDTH);
-    check_vert_wall(LENGTH, WIDTH, WIDTH);
+    // Left boarder
+    check_vert_wall(1, 1, WIDTH);
+    // Right boarder
+    check_vert_wall(LENGTH, 1, WIDTH);
+    // Top boarder
     check_horz_wall(1, 1, LENGTH);
+    // Bottom border
     check_horz_wall(1, WIDTH, LENGTH);
 }
 
@@ -189,23 +225,21 @@ void check_maze1() {
     check_horz_wall(WALL3_M1_X, WALL3_M1_Y, HORZ_WALL_LENGTH);
     check_horz_wall(WALL4_M1_X, WALL4_M1_Y, HORZ_WALL_LENGTH);
 
-//    if (ball_x_vel == 0 ){
-//        ball_x = old_ball_x;
-//    }
-//    else if (ball_y_vel == 0){
-//        ball_y = old_ball_y;
-//    }
-    if (old_ball_x == ball_x && ball_x_vel != 0){
-        //if none of the walls affect the ball's movement
-        ball_x += ball_x_vel;
-    }
-    if (old_ball_y == ball_y && ball_y_vel != 0){
-        ball_y += ball_y_vel;
-    }
+    // We should unconditionally move by the velocity because
+    //   the vlocity should already take into account the collision
+    // if (old_ball_x == ball_x && ball_x_vel != 0) {
+    // if one of the walls affect the ball's movement
+    // This does indicate a collision because the ball did
+    //   not move even though it had velocity
+    ball_x += ball_x_vel;
+    // }
+    // if (old_ball_y == ball_y && ball_y_vel != 0) {
+    ball_y += ball_y_vel;
+    // }
     move_cursor(old_ball_x, old_ball_y);
     uart_write(' ');
-    move_cursor(ball_x, ball_y);
-    uart_write('O');
+    draw_new_ball();
+    
     if (ball_x == WIN_X && ball_y == WIN_Y) {
         win = 1;
     }
@@ -244,10 +278,13 @@ void paint_terminal() {
     term_clear_screen();
     print_border();
     draw_maze1();
+    draw_new_ball();
+}
+
+static void draw_new_ball() {
     move_cursor(ball_x, ball_y);
     uart_write('O');
 }
-
 void print_bits(int16_t val) {
     unsigned int i = 0b1000000000000000;
     while (i != 0) {

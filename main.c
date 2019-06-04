@@ -60,7 +60,8 @@ int main(void) {
         while (win == 0) {
             bno_read_angles(&x_val, &y_val);
 
-            update_ball(x_val, y_val);
+            // update_ball(x_val, y_val);
+            set_ball_vels(x_val, y_val);
             check_maze1();
 
             delay_ms(50, FREQ);

@@ -69,9 +69,11 @@
 static volatile int win = 0;
 void paint_terminal();
 void check_maze1();
+void set_ball_vels(int16_t x_vel, int16_t y_vel);
 void update_ball(int16_t x_accel, int16_t y_accel);
 inline void term_clear_screen();
 
+static void draw_new_ball();
 void print_bits(int16_t val);
 
 #endif /* MAZE_TERM_H_ */
