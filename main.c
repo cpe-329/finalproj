@@ -13,10 +13,10 @@
 
 //#include "button.h"
 #include "bno055.h"
-#include "maze_term.h"
 #include "delay.h"
 #include "i2c.h"
 #include "led.h"
+#include "maze_term.h"
 #include "my_msp.h"
 #include "uart.h"
 
@@ -48,26 +48,23 @@ int main(void) {
     delay_ms(250, FREQ_48_MHZ);
 
     while (1) {
-        uart_write_nl();
-        uart_write_str(str_vals_start, sizeof(str_vals_start));
-        uart_write_int(x_val);
-        // print_bits(x_val);
-        uart_write_str(str_vals_mid, sizeof(str_vals_mid));
-        uart_write_int(y_val);
-        // print_bits(y_val);
+        // uart_write_nl();
+        // uart_write_str(str_vals_start, sizeof(str_vals_start));
+        // uart_write_int(x_val);
+        // uart_write_str(str_vals_mid, sizeof(str_vals_mid));
+        // uart_write_int(y_val);
 
-        // delay_ms(5, FREQ);
-        
-        bno_read_angles(&x_val, &y_val);
+        paint_terminal();
+        delay_ms(1000, FREQ);
 
+        while (win == 0) {
+            bno_read_angles(&x_val, &y_val);
 
-        //   paint_terminal();
-        //   delay_ms_auto(100000);
-        //   while (win == 0){
-        //       update_ball(x_val, y_val);
-        //       check_maze1();
-            //   delay_ms_auto(100000);
-        //   }
+            update_ball(x_val, y_val);
+            check_maze1();
+
+            delay_ms(1000, FREQ);
+        }
     }
 }
 
