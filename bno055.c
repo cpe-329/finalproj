@@ -72,9 +72,9 @@ void bno_read_angles(int16_t* x_out, int16_t* y_out) {
     if (y > 511) {
         // Negative Y
         if (y == 1023) {
-            *y_out = 1;
+            *y_out = -1;
         } else {
-            *y_out = 2;
+            *y_out = -2;
         }
     } else {
         // Positive y
@@ -82,9 +82,9 @@ void bno_read_angles(int16_t* x_out, int16_t* y_out) {
             *y_out = 0;
         }
         else if (y == 1) {
-            *y_out = -1;
+            *y_out = 1;
         } else {
-            *y_out = -2;
+            *y_out = 2;
         }
     }
 }

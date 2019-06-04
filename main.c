@@ -63,7 +63,7 @@ int main(void) {
             update_ball(x_val, y_val);
             check_maze1();
 
-            delay_ms(1000, FREQ);
+            delay_ms(50, FREQ);
         }
     }
 }
