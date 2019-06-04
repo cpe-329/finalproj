@@ -119,7 +119,7 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     // moving left towards wall on left
     if (dist_wall_ball_x < 0 && ball_x_vel < 0) {
         if (dist_wall_ball_x <= ball_x_vel &&
-            (wall_y - wall_len) <= ball_y <= wall_y) {
+            (wall_y - wall_len) <= ball_y  && ball_y <= wall_y) {
             ball_x_vel = 0;
             ball_x = wall_x + 1;
 //            ball_y += ball_y_vel;
@@ -128,7 +128,7 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     // moving right towards wall on right
     else if (dist_wall_ball_x > 0 && ball_x_vel > 0) {
         if (dist_wall_ball_x <= ball_x_vel &&
-            (wall_y - wall_len) <= ball_y <= wall_y) {
+            (wall_y - wall_len) <= ball_y && ball_y <= wall_y) {
             ball_x_vel = 0;
             ball_x = wall_x - 1;
 //            ball_y += ball_y_vel;
@@ -141,7 +141,7 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     // moving up towards wall above
     if (dist_wall_ball_y < 0 && ball_y_vel < 0) {
         if (dist_wall_ball_y <= ball_y_vel &&
-            wall_x <= ball_x <= (wall_x + wall_len)) {
+            (wall_x <= ball_x && ball_x <= (wall_x + wall_len))) {
             ball_y_vel = 0;
             ball_y = wall_y + 1;
 //            ball_x += ball_x_vel;
@@ -150,7 +150,7 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     // moving down towards wall below
     else if (dist_wall_ball_y > 0 && ball_y_vel > 0) {
         if (dist_wall_ball_y <= ball_y_vel &&
-            wall_x <= ball_x <= (wall_x + wall_len)) {
+            wall_x <= ball_x && ball_x <= (wall_x + wall_len)) {
             ball_y_vel = 0;
             ball_y = wall_y - 1;
 //            ball_x += ball_x_vel;
@@ -197,7 +197,6 @@ void check_maze1() {
 //    }
     if (old_ball_x == ball_x && ball_x_vel != 0){
         //if none of the walls affect the ball's movement
-
         ball_x += ball_x_vel;
     }
     if (old_ball_y == ball_y && ball_y_vel != 0){
