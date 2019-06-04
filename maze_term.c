@@ -7,6 +7,7 @@
 
 #include "maze_term.h"
 #include <stdint.h>
+#include <math.h>
 #include "delay.h"
 #include "scope_data.h"
 #include "uart.h"
@@ -56,6 +57,10 @@ inline void term_clear_screen() {
     uart_write_str(command, 4);
 }
 
+inline void clear_line() {
+    unsigned char command[4] = {ESC, '[', '2', 'K'};
+    uart_write_str(command, 4);
+}
 void move_cursor(unsigned int x, unsigned int y) {
     uart_write_str(com, 2);
     uart_write_int(y);
@@ -78,8 +83,7 @@ inline void draw_horizontal(unsigned int length,
 inline void draw_vertical(unsigned int length,
                           unsigned int x,
                           unsigned int y,
-                          char c,
-                          int bar) {
+                          char c) {
     int i;
 
     move_cursor(x, y);
@@ -93,8 +97,12 @@ inline void draw_vertical(unsigned int length,
 void print_border() {
     draw_horizontal(LENGTH - 2, 2, 1, '=');
     draw_horizontal(LENGTH - 2, 2, WIDTH, '=');
-    draw_vertical(WIDTH, LENGTH, WIDTH, '|', 0);
-    draw_vertical(WIDTH, 1, WIDTH, '|', 0);
+    draw_vertical(WIDTH, LENGTH, WIDTH, '|');
+    draw_vertical(WIDTH, 1, WIDTH, '|');
+    draw_vertical(1,1,1, '+');
+    draw_vertical(1,1,24, '+');
+    draw_vertical(1,80,1, '+');
+    draw_vertical(1,80,24, '+');
 }
 
 void draw_maze1(){
@@ -102,26 +110,29 @@ void draw_maze1(){
     draw_vertical(VERT_WALL_LENGTH, WALL2_M1_X, WALL2_M1_Y, '|');
     draw_horizontal(HORZ_WALL_LENGTH, WALL3_M1_X, WALL3_M1_Y, '=');
     draw_horizontal(HORZ_WALL_LENGTH, WALL4_M1_X, WALL4_M1_Y, '=');
+    move_cursor(WIN_X, WIN_Y);
+    uart_write('X');
 }
 
 
 void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
-    if ((wall_x - ball_x) > ball_x_vel){
+    if (abs(wall_x - ball_x) > ball_x_vel && abs(wall_x - ball_x)!= 1){
         //wall not affecting ball
-
+        return;
     }
-    else if ((wall_x - ball_x) <= ball_x_vel &&
+    else if (abs(wall_x - ball_x) <= ball_x_vel &&
             ((wall_y - wall_len) <= ball_y <= wall_y)){
         //wall stops ball in x direction
         if (ball_x > wall_x){
             //if heading towards wall from the right
-            ball_x += wall_x + 1;
+            ball_x += wall_x - 1;
         }
         else{
             //if heading towards wall from the left
-            ball_x += wall_x - 1;
+            ball_x += wall_x + 1;
         }
         ball_x_vel = 0;
+        ball_y_vel = abs(wall_x - ball_x);
         ball_y += ball_y_vel;
     }
 }
@@ -129,8 +140,9 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
 void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
     if ((wall_y - ball_y) > ball_y_vel){
         //wall not affecting ball
+        return;
     }
-    else if ((wall_y - ball_y) <= ball_y_vel &&
+    else if (abs(wall_y - ball_y) <= ball_y_vel &&
             ((wall_x - wall_len) <= ball_x <= wall_x)){
         //wall stops ball in y direction
         if (ball_y > wall_y){
@@ -155,9 +167,10 @@ void update_ball(int16_t x_accel, int16_t y_accel){
 void check_border(){
     check_vert_wall(1, WIDTH, WIDTH);
     check_vert_wall(LENGTH, WIDTH , WIDTH);
-    check_vert_wall(1, 1, LENGTH);
-    check_vert_wall(1, WIDTH, LENGTH);
+    check_horz_wall(1, 1, LENGTH);
+    check_horz_wall(1, WIDTH, LENGTH);
 }
+
 
 void check_maze1(){
     int old_ball_x = ball_x;
@@ -176,19 +189,46 @@ void check_maze1(){
     uart_write(' ');
     move_cursor(ball_x, ball_y);
     uart_write('O');
+    if (ball_x == WIN_X && ball_y == WIN_Y){
+        win = 1;
+    }
 
 }
 
-void scope_refresh_term() {
+void start_animation(){
+    move_cursor(START_TITLE_X, START_TITLE_Y);
+    uart_write_str("THE MAZE GAME", 13);
+    draw_horizontal(17, START_TITLE_X-2, START_TITLE_Y+2, '*');
+    draw_horizontal(17, START_TITLE_X-2, START_TITLE_Y-2, '*');
+    draw_vertical(5, START_TITLE_X-2, START_TITLE_Y+2, '*');
+    draw_vertical(5, START_TITLE_X+14, START_TITLE_Y+2, '*');
+    draw_horizontal(LENGTH - 2, 2, 1, 'v');
+    draw_horizontal(LENGTH - 2, 2, WIDTH, 'v');
+    draw_vertical(WIDTH, LENGTH, WIDTH, 'v');
+    draw_vertical(WIDTH, 1, WIDTH, 'v');
+    delay_ms_auto(10000);
+    draw_horizontal(LENGTH - 2, 2, 1, '^');
+    draw_horizontal(LENGTH - 2, 2, WIDTH, '^');
+    draw_vertical(WIDTH, LENGTH, WIDTH, '^');
+    draw_vertical(WIDTH, 1, WIDTH, '^');
+
 
 }
+
 
 void paint_terminal() {
+    int i;
     term_clear_screen();
     hide_cursor();
+    for(i = 0; i < 3; i++){
+       start_animation();
+       delay_ms_auto(10000);
+    }
+    term_clear_screen();
     print_border();
-
-    scope_refresh_term();
+    draw_maze1();
+    move_cursor(ball_x, ball_y);
+    uart_write('O');
 }
 
 
