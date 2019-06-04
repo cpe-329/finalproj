@@ -6,8 +6,8 @@
  */
 
 #include "maze_term.h"
-#include <stdint.h>
 #include <math.h>
+#include <stdint.h>
 #include "delay.h"
 #include "scope_data.h"
 #include "uart.h"
@@ -99,14 +99,14 @@ void print_border() {
     draw_horizontal(LENGTH - 2, 2, WIDTH, '=');
     draw_vertical(WIDTH, LENGTH, WIDTH, '|');
     draw_vertical(WIDTH, 1, WIDTH, '|');
-    draw_vertical(1,1,1, '+');
-    draw_vertical(1,1,24, '+');
-    draw_vertical(1,80,1, '+');
-    draw_vertical(1,80,24, '+');
+    draw_vertical(1, 1, 1, '+');
+    draw_vertical(1, 1, 24, '+');
+    draw_vertical(1, 80, 1, '+');
+    draw_vertical(1, 80, 24, '+');
 }
 
-void draw_maze1(){
-    draw_vertical(VERT_WALL_LENGTH, WALL1_M1_X, WALL1_M1_Y, '|' );
+void draw_maze1() {
+    draw_vertical(VERT_WALL_LENGTH, WALL1_M1_X, WALL1_M1_Y, '|');
     draw_vertical(VERT_WALL_LENGTH, WALL2_M1_X, WALL2_M1_Y, '|');
     draw_horizontal(HORZ_WALL_LENGTH, WALL3_M1_X, WALL3_M1_Y, '=');
     draw_horizontal(HORZ_WALL_LENGTH, WALL4_M1_X, WALL4_M1_Y, '=');
@@ -114,20 +114,21 @@ void draw_maze1(){
     uart_write('X');
 }
 
-
-void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
+void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     int dist_wall_ball_x = wall_x - ball_x;
-    //moving left towards wall on left
-    if (dist_wall_ball_x < 0 && ball_x_vel < 0){
-        if(dist_wall_ball_x <= ball_x_vel && (wall_y - wall_len) <= ball_y <= wall_y){
+    // moving left towards wall on left
+    if (dist_wall_ball_x < 0 && ball_x_vel < 0) {
+        if (dist_wall_ball_x <= ball_x_vel &&
+            (wall_y - wall_len) <= ball_y <= wall_y) {
             ball_x_vel = 0;
             ball_x = wall_x + 1;
 //            ball_y += ball_y_vel;
         }
     }
-    //moving right towards wall on right
-    else if (dist_wall_ball_x > 0 && ball_x_vel > 0){
-        if(dist_wall_ball_x <= ball_x_vel && (wall_y - wall_len) <= ball_y <= wall_y){
+    // moving right towards wall on right
+    else if (dist_wall_ball_x > 0 && ball_x_vel > 0) {
+        if (dist_wall_ball_x <= ball_x_vel &&
+            (wall_y - wall_len) <= ball_y <= wall_y) {
             ball_x_vel = 0;
             ball_x = wall_x - 1;
 //            ball_y += ball_y_vel;
@@ -135,19 +136,21 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
     }
 }
 
-void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
+void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     int dist_wall_ball_y = wall_y - ball_y;
-    //moving up towards wall above
-    if (dist_wall_ball_y < 0 && ball_y_vel < 0){
-        if(dist_wall_ball_y <= ball_y_vel && wall_x <= ball_x <=  (wall_x + wall_len)){
+    // moving up towards wall above
+    if (dist_wall_ball_y < 0 && ball_y_vel < 0) {
+        if (dist_wall_ball_y <= ball_y_vel &&
+            wall_x <= ball_x <= (wall_x + wall_len)) {
             ball_y_vel = 0;
             ball_y = wall_y + 1;
 //            ball_x += ball_x_vel;
         }
     }
-    //moving down towards wall below
-    else if (dist_wall_ball_y > 0 && ball_y_vel > 0){
-        if(dist_wall_ball_y <= ball_y_vel &&  wall_x <= ball_x <= (wall_x + wall_len)){
+    // moving down towards wall below
+    else if (dist_wall_ball_y > 0 && ball_y_vel > 0) {
+        if (dist_wall_ball_y <= ball_y_vel &&
+            wall_x <= ball_x <= (wall_x + wall_len)) {
             ball_y_vel = 0;
             ball_y = wall_y - 1;
 //            ball_x += ball_x_vel;
@@ -155,33 +158,29 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len){
     }
 }
 
-void update_ball(int16_t x_accel, int16_t y_accel){
-    if (x_accel == 0 && ball_x_vel > 0){
+void update_ball(int16_t x_accel, int16_t y_accel) {
+    if (x_accel == 0 && ball_x_vel > 0) {
         x_accel = -1;
-    }
-    else if (x_accel == 0 && ball_x_vel < 0){
+    } else if (x_accel == 0 && ball_x_vel < 0) {
         x_accel = 1;
     }
-    if (y_accel == 0 && ball_y_vel > 0){
+    if (y_accel == 0 && ball_y_vel > 0) {
         y_accel = -1;
-    }
-    else if (y_accel == 0 && ball_y_vel < 0){
+    } else if (y_accel == 0 && ball_y_vel < 0) {
         y_accel = 1;
     }
     ball_x_vel += x_accel;
     ball_y_vel += y_accel;
-
 }
 
-void check_border(){
+void check_border() {
     check_vert_wall(1, WIDTH, WIDTH);
-    check_vert_wall(LENGTH, WIDTH , WIDTH);
+    check_vert_wall(LENGTH, WIDTH, WIDTH);
     check_horz_wall(1, 1, LENGTH);
     check_horz_wall(1, WIDTH, LENGTH);
 }
 
-
-void check_maze1(){
+void check_maze1() {
     int old_ball_x = ball_x;
     int old_ball_y = ball_y;
     check_border();
@@ -189,6 +188,7 @@ void check_maze1(){
     check_vert_wall(WALL2_M1_X, WALL2_M1_Y, VERT_WALL_LENGTH);
     check_horz_wall(WALL3_M1_X, WALL3_M1_Y, HORZ_WALL_LENGTH);
     check_horz_wall(WALL4_M1_X, WALL4_M1_Y, HORZ_WALL_LENGTH);
+
 //    if (ball_x_vel == 0 ){
 //        ball_x = old_ball_x;
 //    }
@@ -197,6 +197,7 @@ void check_maze1(){
 //    }
     if (old_ball_x == ball_x && ball_x_vel != 0){
         //if none of the walls affect the ball's movement
+
         ball_x += ball_x_vel;
     }
     if (old_ball_y == ball_y && ball_y_vel != 0){
@@ -206,19 +207,18 @@ void check_maze1(){
     uart_write(' ');
     move_cursor(ball_x, ball_y);
     uart_write('O');
-    if (ball_x == WIN_X && ball_y == WIN_Y){
+    if (ball_x == WIN_X && ball_y == WIN_Y) {
         win = 1;
     }
-
 }
 
-void start_animation(){
+void start_animation() {
     move_cursor(START_TITLE_X, START_TITLE_Y);
     uart_write_str("THE MAZE GAME", 13);
-    draw_horizontal(17, START_TITLE_X-2, START_TITLE_Y+2, '*');
-    draw_horizontal(17, START_TITLE_X-2, START_TITLE_Y-2, '*');
-    draw_vertical(5, START_TITLE_X-2, START_TITLE_Y+2, '*');
-    draw_vertical(5, START_TITLE_X+14, START_TITLE_Y+2, '*');
+    draw_horizontal(17, START_TITLE_X - 2, START_TITLE_Y + 2, '*');
+    draw_horizontal(17, START_TITLE_X - 2, START_TITLE_Y - 2, '*');
+    draw_vertical(5, START_TITLE_X - 2, START_TITLE_Y + 2, '*');
+    draw_vertical(5, START_TITLE_X + 14, START_TITLE_Y + 2, '*');
     move_cursor(START_TITLE_X - 5, START_TITLE_Y + 4);
     uart_write_str("CPE 329 - Final Project", 23);
     move_cursor(START_TITLE_X - 10, START_TITLE_Y + 6);
@@ -232,17 +232,15 @@ void start_animation(){
     draw_horizontal(LENGTH - 2, 2, WIDTH, '^');
     draw_vertical(WIDTH, LENGTH, WIDTH, '^');
     draw_vertical(WIDTH, 1, WIDTH, '^');
-
 }
-
 
 void paint_terminal() {
     int i;
     term_clear_screen();
     hide_cursor();
-    for(i = 0; i < 3; i++){
-       start_animation();
-       delay_ms_auto(10000);
+    for (i = 0; i < 3; i++) {
+        start_animation();
+        delay_ms_auto(10000);
     }
     term_clear_screen();
     print_border();
@@ -251,6 +249,17 @@ void paint_terminal() {
     uart_write('O');
 }
 
-
-
-
+void print_bits(int16_t val) {
+    unsigned int i = 0b1000000000000000;
+    while (i != 0) {
+        if (val & i) {
+            uart_write('1');
+        } else {
+            uart_write('0');
+        }
+        if (i == 0x0100 | i == 0x1000 | i == 0x0010) {
+            uart_write('_');
+        }
+        i = i >> 1;
+    }
+}

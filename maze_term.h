@@ -21,21 +21,25 @@
 
 #define WIN_X 75
 #define WIN_Y 20
+
 //maze 1
 #define HORZ_MAZE1_WIDTH 15
 #define VERT_MAZE1_WIDTH 8
 #define VERT_WALL_LENGTH (WIDTH - VERT_MAZE1_WIDTH)
 #define HORZ_WALL_LENGTH  35
+
   //Vertical walls start position
 #define WALL1_M1_X 15
 #define WALL1_M1_Y (WIDTH - VERT_MAZE1_WIDTH+1)
 #define WALL2_M1_X 30
 #define WALL2_M1_Y (WIDTH - 1)
+
   //Horizontal walls start position
 #define WALL3_M1_X WALL2_M1_X
 #define WALL3_M1_Y VERT_MAZE1_WIDTH
 #define WALL4_M1_X (WALL2_M1_X + HORZ_MAZE1_WIDTH)
 #define WALL4_M1_Y (WALL3_M1_Y + VERT_MAZE1_WIDTH)
+
 //  MAZE1
 //   +-----15-----+
 //  +-----------------------------------------------------------------------------+
@@ -66,5 +70,8 @@ static volatile int win = 0;
 void paint_terminal();
 void check_maze1();
 void update_ball(int16_t x_accel, int16_t y_accel);
+inline void term_clear_screen();
+
+void print_bits(int16_t val);
 
 #endif /* MAZE_TERM_H_ */
