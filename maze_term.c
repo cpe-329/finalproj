@@ -173,7 +173,7 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     }
     // moving up towards wall above
     else if (dist_wall_ball_y < 0 && ball_y_vel < 0) {
-        if (ball_y_vel >= dist_wall_ball_y) {
+        if (ball_y_vel <= dist_wall_ball_y) {
             ball_y_vel = dist_wall_ball_y + 1;
         }
     }
