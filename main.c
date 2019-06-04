@@ -60,7 +60,7 @@ int main(void) {
           while (win == 0){
               update_ball(x_val, y_val);
               check_maze1();
-              delay_ms_auto(100000);
+              delay_ms_auto(1000);
           }
     }
 }
