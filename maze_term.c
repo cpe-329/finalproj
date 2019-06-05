@@ -125,6 +125,15 @@ void draw_win(unsigned int x, unsigned int y){
     uart_write_str("+===+", 5);
 }
 
+void draw_trap(unsigned int x, uunsigned int y){
+    move_cursor(x, y);
+    uart_write_str("XXX", 3);
+    move_cursor(x, y + 1);
+    uart_write_str("XXX", 3);
+    move_cursor(x, y + 2);
+    uart_write_str("XXX", 3);
+}
+
 void draw_maze1() {
     // Vert wall 1
     draw_vertical(WALL1_M1_X, WALL1_M1_Y, VERT_WALL_M1_LENGTH, '|');
@@ -134,6 +143,10 @@ void draw_maze1() {
     draw_horizontal(WALL3_M1_X, WALL3_M1_Y, HORZ_WALL_M1_LENGTH, '=');
     // Horz wall 2
     draw_horizontal(WALL4_M1_X, WALL4_M1_Y, HORZ_WALL_M1_LENGTH, '=');
+
+    draw_trap(WALL1_M1_X-1, WALL1_M1_Y + VERT_WALL_M1_LENGTH);
+    draw_trap(WALL3_M1_X + HORZ_WALL_M1_LENGTH, WALL3_M1_Y -1 );
+    draw_trap(WALL4_M1_X + 3, WIDTH -3);
     // Maze
     draw_win(WIN_M1_X, WIN_M1_Y);
 }
@@ -155,6 +168,10 @@ void draw_maze2() {
     draw_horizontal(WALL7_M2_X, WALL7_M2_Y, HORZ_WALL_M2_LENGTH -2*HORZ_MAZE2_WIDTH , '=');
     // Horz wall 8
     draw_horizontal(WALL8_M2_X, WALL8_M2_Y, HORZ_WALL_M2_LENGTH -3*HORZ_MAZE2_WIDTH , '=');
+
+    draw_trap(2, WIDTH -3);
+    draw_trap(WALL7_M2_X + 5, WALL7_M2_Y + 1 );
+    draw_trap(WALL4_M2_X + 1, WALL4_M2_X -2);
     // Maze
     draw_win(WIN_M2_X, WIN_M2_Y);
 }
@@ -172,6 +189,11 @@ void draw_maze3() {
     draw_vertical(WALL5_M3_X, WALL5_M3_Y, VERT_WALL_M3_LENGTH, '|');
     // Vert wall 6
     draw_vertical(WALL6_M3_X, WALL6_M3_Y, VERT_WALL_M3_LENGTH, '|');
+
+    draw_trap(WALL2_M3_X-1, WALL2_M3_Y -3);
+    draw_trap(WALL3_M3_X - 1, WALL3_M3_Y + VERT_WALL_M3_LENGTH);
+    draw_trap(WALL5_M3_X -3, WALL5_M3_ Y - 5);
+    draw_trap(LENGTH - 4, 2);
     // Maze
     draw_win(WIN_M3_X, WIN_M3_Y);
 }
@@ -320,7 +342,7 @@ void check_border() {
 
 static void draw_new_ball() {
     move_cursor(ball_x, ball_y);
-    uart_write('O');
+    uart_write('o');
     move_home();
 }
 
@@ -355,8 +377,8 @@ void check_maze2() {
     check_border();
     check_vert_wall(WALL1_M2_X, WALL1_M2_Y, VERT_WALL_M2_LENGTH);
     check_vert_wall(WALL2_M2_X, WALL2_M2_Y, VERT_WALL_M2_LENGTH - VERT_MAZE2_WIDTH);
-    check_vert_wall(WALL3_M2_X, WALL3_M2_Y, VERT_WALL_M2_LENGTH - 2*VERT_MAZE2_WIDTH);
-    check_vert_wall(WALL4_M2_X, WALL4_M2_Y, VERT_WALL_M2_LENGTH - 3*VERT_MAZE2_WIDTH);
+    check_vert_wall(WALL3_M2_X, WALL3_M2_Y, VERT_WALL_M2_LENGTH - 2*VERT_MAZE2_WIDTH + 1);
+    check_vert_wall(WALL4_M2_X, WALL4_M2_Y, VERT_WALL_M2_LENGTH - 3*VERT_MAZE2_WIDTH + 1);
     check_horz_wall(WALL5_M2_X, WALL5_M2_Y, HORZ_WALL_M2_LENGTH);
     check_horz_wall(WALL6_M2_X, WALL6_M2_Y, HORZ_WALL_M2_LENGTH - HORZ_MAZE2_WIDTH);
     check_horz_wall(WALL7_M2_X, WALL7_M2_Y, HORZ_WALL_M2_LENGTH - 2*HORZ_MAZE2_WIDTH);
