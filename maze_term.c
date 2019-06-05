@@ -393,6 +393,9 @@ void check_maze1() {
     // if one of the walls affect the ball's movement
     // This does indicate a collision because the ball did
     //   not move even though it had velocity
+    check_trap(WALL1_M1_X-1, WALL1_M1_Y + VERT_WALL_M1_LENGTH, 1);
+    check_trap(WALL3_M1_X + HORZ_WALL_M1_LENGTH, WALL3_M1_Y -1, 1);
+    check_trap(WALL4_M1_X + 3, WIDTH -3, 1);
     ball_x += ball_x_vel;
     // }
     // if (old_ball_y == ball_y && ball_y_vel != 0) {
