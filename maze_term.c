@@ -127,7 +127,12 @@ void draw_maze1() {
     draw_horizontal(WALL4_M1_X, WALL4_M1_Y, HORZ_WALL_LENGTH, '=');
     // Maze
     move_cursor(WIN_X, WIN_Y);
-    uart_write('X');
+    uart_write_str("+===+", 5);
+    move_cursor(WIN_X, WIN_Y+1);
+    uart_write_str("| X |", 5);
+    move_cursor(WIN_X, WIN_Y+2);
+    uart_write_str("+===+", 5);
+
 }
 
 void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
@@ -180,11 +185,11 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
 }
 
 void set_ball_vels(int16_t x_vel, int16_t y_vel) {
-    move_home();
-    uart_write_str("X: ",3);
-    uart_write_int(x_vel);
-    uart_write_str("\tY: ",4);
-    uart_write_int(y_vel);
+//    move_home();
+//    uart_write_str("X: ",3);
+//    uart_write_int(x_vel);
+//    uart_write_str("\tY: ",4);
+//    uart_write_int(y_vel);
     ball_x_vel = x_vel;
     ball_y_vel = y_vel;
 }
@@ -246,9 +251,14 @@ void check_maze1() {
     uart_write(' ');
     draw_new_ball();
     
-    if (ball_x == WIN_X && ball_y == WIN_Y) {
-        win = 1;
+}
+
+int check_win(){
+    if((ball_x >= WIN_X && ball_x <= WIN_X+4) && (ball_y >= WIN_Y && ball_y <= WIN_Y + 2)){
+        return 1;
     }
+    return 0;
+
 }
 
 void start_animation() {
@@ -273,6 +283,25 @@ void start_animation() {
     draw_vertical( 1, 1,WIDTH, '^');
 }
 
+void win_animation(){
+    term_clear_screen();
+    move_cursor(START_TITLE_X + 2, START_TITLE_Y);
+    uart_write_str("YOU WIN!", 8);
+    draw_horizontal( START_TITLE_X - 2, START_TITLE_Y + 2, 15,'*');
+    draw_horizontal( START_TITLE_X - 2, START_TITLE_Y - 2, 15, '*');
+    draw_vertical(START_TITLE_X - 2, START_TITLE_Y - 2, 5,  '*');
+    draw_vertical(START_TITLE_X + 12, START_TITLE_Y - 2, 5, '*');
+    delay_ms_auto(100000);
+}
+
+void restart_ball(){
+    ball_x = BALL_START_X;
+    ball_y = BALL_START_Y;
+    ball_x_vel = 0;
+    ball_y_vel = 0;
+
+}
+
 void paint_terminal() {
     int i;
     term_clear_screen();
@@ -284,6 +313,7 @@ void paint_terminal() {
     term_clear_screen();
     print_border();
     draw_maze1();
+    restart_ball();
     draw_new_ball();
 }
 

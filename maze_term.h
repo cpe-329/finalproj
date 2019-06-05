@@ -19,8 +19,8 @@
 #define BALL_START_X 8
 #define BALL_START_Y 3
 
-#define WIN_X 75
-#define WIN_Y 20
+#define WIN_X 70
+#define WIN_Y 19
 
 //maze 1
 #define HORZ_MAZE1_WIDTH 15
@@ -66,11 +66,11 @@
 //| |                             X                                               |
 //+ +-----------------------------------------------------------------------------+
 
-static volatile int win = 0;
 void paint_terminal();
 void check_maze1();
-
-void update_ball(int16_t x_accel, int16_t y_accel);
+void win_animation();
+int check_win();
+void set_ball_vels(int16_t x_vel, int16_t y_vel);
 inline void term_clear_screen();
 
 void print_bits(int16_t val);
