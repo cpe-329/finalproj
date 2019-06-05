@@ -140,8 +140,7 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
 
     dist_wall_ball_x = wall_x - ball_x;
 
-
-    if (dist_wall_ball_x == 0){
+    if (dist_wall_ball_x == 0) {
         return;
     }
     // moving right towards wall on right
@@ -158,6 +157,61 @@ void check_vert_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     }
 }
 
+void check_wall_box(uint8_t wall_corner_x,
+                    uint8_t wall_corner_y,
+                    uint8_t wall_width,
+                    uint8_t wall_height) {
+    int wall_x = wall_corner_x;
+    int wall_y = wall_corner_y;
+    int dist_x;
+    int dist_y;
+
+    if (ball_x >= wall_corner_x + wall_width) {
+        wall_x += wall_width;
+    }
+    if (ball_y >= wall_corner_y + wall_height) {
+        wall_y += wall_height;
+    }
+
+    dist_x = wall_x - ball_x;
+    dist_y = wall_y - ball_y;
+
+    // Left of right of vertical wall
+    if (!((ball_y < wall_y) | (ball_y > wall_y + wall_width))) {
+        if (dist_x != 0) {
+            // moving right towards wall on right
+            if (dist_x > 0 && ball_x_vel > 0) {
+                if (ball_x_vel >= dist_x) {
+                    ball_x_vel = dist_x - 1;
+                }
+            }
+            // moving left towards wall on left
+            else if (dist_x < 0 && ball_x_vel < 0) {
+                if (ball_x_vel <= dist_x) {
+                    ball_x_vel = dist_x + 1;
+                }
+            }
+        }
+    }
+    // Above or below the horizontal wall
+    if (!((ball_x < wall_x) | (ball_x > wall_x + wall_width))) {
+        if (dist_y != 0) {
+            // moving down towards wall below
+            if (dist_y > 0 && ball_y_vel > 0) {
+                if (ball_y_vel >= dist_y) {
+                    ball_y_vel = dist_y - 1;
+                }
+            }
+            // moving up towards wall above
+            else if (dist_y < 0 && ball_y_vel < 0) {
+                if (ball_y_vel <= dist_y) {
+                    ball_y_vel = dist_y + 1;
+                }
+            }
+        }
+    }
+}
+
 void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
     int dist_wall_ball_y;
 
@@ -168,7 +222,7 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
 
     dist_wall_ball_y = wall_y - ball_y;
 
-    if (dist_wall_ball_y == 0){
+    if (dist_wall_ball_y == 0) {
         return;
     }
     // moving down towards wall below
@@ -186,11 +240,11 @@ void check_horz_wall(uint8_t wall_x, uint8_t wall_y, uint8_t wall_len) {
 }
 
 void set_ball_vels(int16_t x_vel, int16_t y_vel) {
-    move_home();
-    uart_write_str("X: ",3);
-    uart_write_int(x_vel);
-    uart_write_str("\tY: ",4);
-    uart_write_int(y_vel);
+    // move_home();
+    // uart_write_str("X: ",3);
+    // uart_write_int(x_vel);
+    // uart_write_str("\tY: ",4);
+    // uart_write_int(y_vel);
     ball_x_vel = x_vel;
     ball_y_vel = y_vel;
 }
@@ -226,6 +280,7 @@ void check_border() {
 static void draw_new_ball() {
     move_cursor(ball_x, ball_y);
     uart_write('O');
+    move_home();
 }
 
 void check_maze1() {
@@ -260,23 +315,23 @@ void check_maze1() {
 void start_animation() {
     move_cursor(START_TITLE_X, START_TITLE_Y);
     uart_write_str("THE MAZE GAME", 13);
-    draw_horizontal( START_TITLE_X - 2, START_TITLE_Y + 2, 17,'*');
-    draw_horizontal( START_TITLE_X - 2, START_TITLE_Y - 2, 17, '*');
-    draw_vertical(START_TITLE_X - 2, START_TITLE_Y - 2, 5,  '*');
+    draw_horizontal(START_TITLE_X - 2, START_TITLE_Y + 2, 17, '*');
+    draw_horizontal(START_TITLE_X - 2, START_TITLE_Y - 2, 17, '*');
+    draw_vertical(START_TITLE_X - 2, START_TITLE_Y - 2, 5, '*');
     draw_vertical(START_TITLE_X + 14, START_TITLE_Y - 2, 5, '*');
     move_cursor(START_TITLE_X - 5, START_TITLE_Y + 4);
     uart_write_str("CPE 329 - Final Project", 23);
     move_cursor(START_TITLE_X - 10, START_TITLE_Y + 6);
     uart_write_str("By: Spencer Shaw and Danica Fujiwara", 36);
-    draw_horizontal( 2, 1,LENGTH - 2, 'v');
-    draw_horizontal( 2, WIDTH,LENGTH - 2, 'v');
-    draw_vertical(LENGTH, 1,WIDTH,  'v');
-    draw_vertical( 1, 1,WIDTH, 'v');
+    draw_horizontal(2, 1, LENGTH - 2, 'v');
+    draw_horizontal(2, WIDTH, LENGTH - 2, 'v');
+    draw_vertical(LENGTH, 1, WIDTH, 'v');
+    draw_vertical(1, 1, WIDTH, 'v');
     delay_ms_auto(10000);
-    draw_horizontal( 2, 1,LENGTH - 2, '^');
+    draw_horizontal(2, 1, LENGTH - 2, '^');
     draw_horizontal(2, WIDTH, LENGTH - 2, '^');
-    draw_vertical( LENGTH, 1,WIDTH, '^');
-    draw_vertical( 1, 1,WIDTH, '^');
+    draw_vertical(LENGTH, 1, WIDTH, '^');
+    draw_vertical(1, 1, WIDTH, '^');
 }
 
 void paint_terminal() {
@@ -291,12 +346,6 @@ void paint_terminal() {
     print_border();
     draw_maze1();
     draw_new_ball();
-}
-
-static void draw_new_ball() {
-    move_cursor(ball_x, ball_y);
-    uart_write('O');
-    move_home();
 }
 
 void print_bits(int16_t val) {
