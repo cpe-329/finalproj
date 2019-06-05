@@ -9,6 +9,8 @@
 #define MAZE_TERM_H_
 #include <stdint.h>
 
+#define BALL_CHAR 'o'
+
 #define ESC 0x1B
 #define WIDTH 24
 #define LENGTH 80
@@ -197,6 +199,7 @@ void maze1();
 void maze2();
 void maze3();
 
+void check_trap(uint8_t trap_x, uint8_t trap_y, uint8_t maze_num);    
 static void draw_new_ball();
 void print_bits(int16_t val);
 
