@@ -66,7 +66,7 @@ int main(void) {
             set_ball_vels(x_val, y_val);
             check_maze1();
 
-            delay_ms(50, FREQ);
+            delay_ms(UPDATE_DELAY, FREQ);
         }
         win_animation();
         level_animation(2);
@@ -79,20 +79,20 @@ int main(void) {
             check_maze2();
 
             delay_ms(UPDATE_DELAY, FREQ);
-         }
-          win_animation();
-          level_animation(3);
-          maze3();
-          while (!check_win(WIN_M3_X, WIN_M3_Y)) {
-              bno_read_angles(&x_val, &y_val);
+        }
+        win_animation();
+        level_animation(3);
+        maze3();
+        while (!check_win(WIN_M3_X, WIN_M3_Y)) {
+            bno_read_angles(&x_val, &y_val);
 
-               // update_ball(x_val, y_val);
-               set_ball_vels(x_val, y_val);
-               check_maze3();
+            // update_ball(x_val, y_val);
+            set_ball_vels(x_val, y_val);
+            check_maze3();
 
-               delay_ms(50, FREQ);
-           }
-           win_animation();
+            delay_ms(UPDATE_DELAY, FREQ);
+        }
+        win_animation();
     }
 }
 
