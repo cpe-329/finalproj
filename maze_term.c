@@ -125,7 +125,7 @@ void draw_win(unsigned int x, unsigned int y) {
     uart_write_str("+===+", 5);
 }
 
-void draw_trap(unsigned int x, uunsigned int y){
+void draw_trap(unsigned int x, unsigned int y){
     move_cursor(x, y);
     uart_write_str("XXX", 3);
     move_cursor(x, y + 1);
@@ -177,8 +177,8 @@ void draw_maze2() {
                     HORZ_WALL_M2_LENGTH - 3 * HORZ_MAZE2_WIDTH, '=');
 
     draw_trap(2, WIDTH -3);
-    draw_trap(WALL7_M2_X + 5, WALL7_M2_Y + 1 );
-    draw_trap(WALL4_M2_X + 1, WALL4_M2_X -2);
+    draw_trap(WALL8_M2_X + 2, WALL8_M2_Y + 1 );
+    draw_trap(WALL2_M2_X -3, WALL2_M2_Y +1);
     // Maze
     draw_win(WIN_M2_X, WIN_M2_Y);
 }
@@ -197,9 +197,9 @@ void draw_maze3() {
     // Vert wall 6
     draw_vertical(WALL6_M3_X, WALL6_M3_Y, VERT_WALL_M3_LENGTH, '|');
 
-    draw_trap(WALL2_M3_X-1, WALL2_M3_Y -3);
-    draw_trap(WALL3_M3_X - 1, WALL3_M3_Y + VERT_WALL_M3_LENGTH);
-    draw_trap(WALL5_M3_X -3, WALL5_M3_ Y - 5);
+    draw_trap(WALL2_M3_X-1, WALL2_M3_Y -2);
+    draw_trap(WALL3_M3_X-1, WALL3_M3_Y + VERT_WALL_M3_LENGTH -1);
+    draw_trap(WALL5_M3_X - 3, WALL5_M3_Y + 7);
     draw_trap(LENGTH - 4, 2);
     // Maze
     draw_win(WIN_M3_X, WIN_M3_Y);
@@ -353,9 +353,8 @@ void reset_ball(uint8_t maze_num){
 }
 
 void check_trap(uint8_t trap_x, uint8_t trap_y, uint8_t maze_num){
-    int8_t dist_x = ball_x - trap_x;
-    int8_t dist_y = ball_y - trap_y;
-    if ((dist_x >= -1 && dist_x <= -1) && (dist_y >= -1 && dist_y <= 1)){
+    if ((ball_x >= trap_x && ball_x <= trap_x + 4) &&
+            (ball_y >= trap_y && ball_y <= trap_y + 2)){
         reset_ball(maze_num);
     } 
 }
@@ -413,17 +412,17 @@ void check_maze2() {
     check_vert_wall(WALL1_M2_X, WALL1_M2_Y, VERT_WALL_M2_LENGTH);
 
     check_vert_wall(WALL2_M2_X, WALL2_M2_Y,
-                    VERT_WALL_M2_LENGTH - VERT_MAZE2_WIDTH);
+                    VERT_WALL_M2_LENGTH - VERT_MAZE2_WIDTH - 1);
     check_vert_wall(WALL3_M2_X, WALL3_M2_Y,
-                    VERT_WALL_M2_LENGTH - 2 * VERT_MAZE2_WIDTH);
+                    VERT_WALL_M2_LENGTH - 2 * VERT_MAZE2_WIDTH + 1);
     check_vert_wall(WALL4_M2_X, WALL4_M2_Y,
-                    VERT_WALL_M2_LENGTH - 3 * VERT_MAZE2_WIDTH);
+                    VERT_WALL_M2_LENGTH - 3 * VERT_MAZE2_WIDTH + 2);
     check_horz_wall(WALL5_M2_X, WALL5_M2_Y, HORZ_WALL_M2_LENGTH);
     check_horz_wall(WALL6_M2_X, WALL6_M2_Y,
                     HORZ_WALL_M2_LENGTH - HORZ_MAZE2_WIDTH);
     check_horz_wall(WALL7_M2_X, WALL7_M2_Y,
                     HORZ_WALL_M2_LENGTH - 2 * HORZ_MAZE2_WIDTH);
-    check_horz_wall(WALL8_M2_X, WALL8_M2_Y,
+    check_horz_wall(WALL8_M2_X -1, WALL8_M2_Y,
                     HORZ_WALL_M2_LENGTH - 3 * HORZ_MAZE2_WIDTH);
 
     // We should unconditionally move by the velocity because
@@ -432,6 +431,9 @@ void check_maze2() {
     // if one of the walls affect the ball's movement
     // This does indicate a collision because the ball did
     //   not move even though it had velocity
+    check_trap(2, WIDTH -3, 2);
+    check_trap(WALL8_M2_X + 2, WALL8_M2_Y + 1 , 2);
+    check_trap(WALL2_M2_X -3, WALL2_M2_Y +1, 2);
     ball_x += ball_x_vel;
     // }
     // if (old_ball_y == ball_y && ball_y_vel != 0) {
@@ -458,6 +460,10 @@ void check_maze3() {
     // if one of the walls affect the ball's movement
     // This does indicate a collision because the ball did
     //   not move even though it had velocity
+    check_trap(WALL2_M3_X-1, WALL2_M3_Y -2, 3);
+    check_trap(WALL3_M3_X-1, WALL3_M3_Y + VERT_WALL_M3_LENGTH -1, 3);
+    check_trap(WALL5_M3_X - 3, WALL5_M3_Y + 7, 3);
+    check_trap(LENGTH - 4, 2, 3);
     ball_x += ball_x_vel;
     // }
     // if (old_ball_y == ball_y && ball_y_vel != 0) {
@@ -488,7 +494,7 @@ void start_animation() {
     draw_horizontal(2, WIDTH, LENGTH - 2, 'v');
     draw_vertical(LENGTH, 1, WIDTH, 'v');
     draw_vertical(1, 1, WIDTH, 'v');
-    delay_ms_auto(10000);
+    delay_ms(250, FREQ_48_MHZ);
     draw_horizontal(2, 1, LENGTH - 2, '^');
     draw_horizontal(2, WIDTH, LENGTH - 2, '^');
     draw_vertical(LENGTH, 1, WIDTH, '^');
@@ -504,7 +510,7 @@ void level_animation(unsigned int level) {
     draw_horizontal(START_TITLE_X - 2, START_TITLE_Y - 2, 15, '*');
     draw_vertical(START_TITLE_X - 2, START_TITLE_Y - 2, 5, '*');
     draw_vertical(START_TITLE_X + 12, START_TITLE_Y - 2, 5, '*');
-    delay_ms_auto(100000);
+    delay_ms(2000, FREQ_48_MHZ);
 }
 
 void win_animation() {
@@ -515,7 +521,7 @@ void win_animation() {
     draw_horizontal(START_TITLE_X - 2, START_TITLE_Y - 2, 15, '*');
     draw_vertical(START_TITLE_X - 2, START_TITLE_Y - 2, 5, '*');
     draw_vertical(START_TITLE_X + 12, START_TITLE_Y - 2, 5, '*');
-    delay_ms_auto(100000);
+    delay_ms(2000, FREQ_48_MHZ);
 }
 
 void restart_ball(unsigned int x, unsigned int y) {
@@ -529,9 +535,9 @@ void paint_terminal() {
     int i;
     term_clear_screen();
     hide_cursor();
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 10; i++) {
         start_animation();
-        delay_ms_auto(10000);
+        delay_ms(250, FREQ_48_MHZ);
     }
 }
 
